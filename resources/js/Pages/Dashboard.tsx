@@ -102,7 +102,6 @@ export default function Dashboard({
 
     function updateUser(id: number) {
         const usuario = users.find((user) => user.id === id);
-        // setId(usuario?.id);
         setStates("editando");
         handleCreateUser(true);
 
