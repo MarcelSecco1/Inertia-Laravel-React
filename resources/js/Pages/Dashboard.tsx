@@ -9,31 +9,57 @@ import InputLabel from "@/Components/InputLabel";
 import InputError from "@/Components/InputError";
 import PrimaryButton from "@/Components/PrimaryButton";
 import SecondaryButton from "@/Components/SecondaryButton";
+import { useForm } from "@inertiajs/react";
+import { ExecException } from "child_process";
 
 export default function Dashboard({
     auth,
     users,
 }: PageProps<{ users: Users }>) {
     const [showModal, setShowModal] = useState(false);
-    const [values, setValues] = useState({
+
+    const { data, setData, post, processing, errors, setError, reset } = useForm({
         nome: "",
         email: "",
         senha: "",
         confSenha: "",
     });
 
+    function handleCreateUser(open: boolean) {
+        setShowModal(open);
+        reset();
+    }
+
     function handleChange(e: any) {
         const key = e.target.id;
         const value = e.target.value;
-        setValues((values) => ({
+
+        if (key === "confSenha" && data.senha !== value) {
+            setError("confSenha", "As senhas não conferem");
+        } else {
+            setError("confSenha", "");
+        }
+        setData((values) => ({
             ...values,
             [key]: value,
         }));
     }
 
-    function handleSubmit(e: any) {
+    function submit(e: any) {
         e.preventDefault();
-        router.post("/users", values);
+        post("/users-create")
+            ?.then((response: any) => {
+                if (response.ok) {
+                    handleCreateUser(false);
+                    router.reload();
+                    return response.json();
+                } else {
+                    throw new Error(`Erro de requisição: ${response.status}`);
+                }
+            })
+            .catch((warning: ExecException) => {
+                console.error("Erro:", warning);
+            });
     }
 
     return (
@@ -53,86 +79,93 @@ export default function Dashboard({
                         <div className="m-6">
                             <button
                                 className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded"
-                                onClick={() => setShowModal(true)}
+                                onClick={() => handleCreateUser(true)}
                             >
                                 Criar Usuário
                             </button>
                             <Modal
                                 show={showModal}
-                                onClose={() => setShowModal(false)}
+                                onClose={() => handleCreateUser(false)}
                             >
                                 <div className="p-6 text-white">
                                     <h2 className="text-lg font-bold mb-4">
                                         Formulário de Usuário
                                     </h2>
-                                    <form onSubmit={handleSubmit}>
+                                    <form onSubmit={submit}>
                                         <div className="">
-                                            <InputLabel>Nome: </InputLabel>
-                                            <TextInput
-                                                className="mt-2  w-full"
-                                                id="nome"
-                                                value={values.nome}
-                                                onChange={handleChange}
-                                            />
-                                            <InputError
-                                                message="Teste"
-                                                className="mb-2"
-                                            ></InputError>
-                                        </div>
-                                        <div className="">
-                                            <InputLabel>Email: </InputLabel>
-                                            <TextInput
-                                                className="mt-2  w-full"
-                                                id="email"
-                                                value={values.email}
-                                                onChange={handleChange}
-                                            />
-                                            <InputError
-                                                message="Teste"
-                                                className="mb-2"
-                                            ></InputError>
-                                        </div>
-                                        <div className="">
-                                            <InputLabel>Senha: </InputLabel>
-                                            <TextInput
-                                                className="mt-2  w-full"
-                                                id="email"
-                                                value={values.senha}
-                                                onChange={handleChange}
-                                            />
-                                            <InputError
-                                                message="Teste"
-                                                className="mb-2"
-                                            ></InputError>
-                                        </div>
-                                        <div className="">
-                                            <InputLabel>
-                                                Confimar Senha:{" "}
+                                            <InputLabel className="mt-2">
+                                                Nome:{" "}
                                             </InputLabel>
                                             <TextInput
                                                 className="mt-2  w-full"
-                                                id="confSenha"
-                                                value={values.confSenha}
+                                                id="nome"
+                                                value={data.nome}
                                                 onChange={handleChange}
                                             />
                                             <InputError
-                                                message="Teste"
+                                                message={errors.nome}
+                                                className="mb-2"
+                                            ></InputError>
+                                        </div>
+                                        <div className="">
+                                            <InputLabel className="mt-2">
+                                                Email:{" "}
+                                            </InputLabel>
+                                            <TextInput
+                                                className="mt-2  w-full"
+                                                id="email"
+                                                value={data.email}
+                                                onChange={handleChange}
+                                            />
+                                            <InputError
+                                                message={errors.email}
+                                                className="mb-2"
+                                            ></InputError>
+                                        </div>
+                                        <div className="">
+                                            <InputLabel className="mt-2">
+                                                Senha:{" "}
+                                            </InputLabel>
+                                            <TextInput
+                                                type="password"
+                                                className="mt-2  w-full"
+                                                id="senha"
+                                                value={data.senha}
+                                                onChange={handleChange}
+                                            />
+                                            <InputError
+                                                message={errors.senha}
+                                                className="mb-2"
+                                            ></InputError>
+                                        </div>
+                                        <div className="">
+                                            <InputLabel className="mt-2">
+                                                Confimar Senha:{" "}
+                                            </InputLabel>
+                                            <TextInput
+                                                type="password"
+                                                className="mt-2  w-full"
+                                                id="confSenha"
+                                                value={data.confSenha}
+                                                onChange={handleChange}
+                                            />
+                                            <InputError
+                                                message={errors.confSenha}
                                                 className="mb-2"
                                             ></InputError>
                                         </div>
                                         <div className="py-3 my-1">
                                             <PrimaryButton
-                                                onClick={() =>
-                                                    setShowModal(false)
-                                                }
+                                                type="submit"
                                                 className="me-3"
+                                                disabled={processing}
                                             >
                                                 {" "}
                                                 Enviar{" "}
                                             </PrimaryButton>
                                             <SecondaryButton
                                                 onClick={() =>
-                                                    setShowModal(false)
+                                                    handleCreateUser(false)
                                                 }
                                             >
                                                 {" "}
