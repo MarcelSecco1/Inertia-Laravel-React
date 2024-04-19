@@ -19,7 +19,7 @@ class UsersController extends Controller
     public function create(Request $request)
     {
         $request->validate([
-            'nome' => ['required', 'string', 'max:255'],
+            'nome' => ['required', 'string', 'max:255', 'min:3'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'senha' => ['required', 'string', 'min:8'],
         ]);
@@ -30,6 +30,6 @@ class UsersController extends Controller
             'password' => bcrypt($request->password),
         ]);
 
-        return response()->json(['message' => 'Usuário criado com sucesso!'], 201, ['Content-Type' => 'application/json']);
+        // return response()->json(['message' => 'Usuário criado com sucesso!'], 201, ['Content-Type' => 'application/json']);
     }
 }

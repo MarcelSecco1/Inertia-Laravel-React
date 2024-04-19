@@ -10,7 +10,6 @@ import InputError from "@/Components/InputError";
 import PrimaryButton from "@/Components/PrimaryButton";
 import SecondaryButton from "@/Components/SecondaryButton";
 import { useForm } from "@inertiajs/react";
-import { ExecException } from "child_process";
 
 export default function Dashboard({
     auth,
@@ -18,12 +17,13 @@ export default function Dashboard({
 }: PageProps<{ users: Users }>) {
     const [showModal, setShowModal] = useState(false);
 
-    const { data, setData, post, processing, errors, setError, reset } = useForm({
-        nome: "",
-        email: "",
-        senha: "",
-        confSenha: "",
-    });
+    const { data, setData, post, processing, errors, setError, reset } =
+        useForm({
+            nome: "",
+            email: "",
+            senha: "",
+            confSenha: "",
+        });
 
     function handleCreateUser(open: boolean) {
         setShowModal(open);
@@ -48,18 +48,6 @@ export default function Dashboard({
     function submit(e: any) {
         e.preventDefault();
         post("/users-create")
-            ?.then((response: any) => {
-                if (response.ok) {
-                    handleCreateUser(false);
-                    router.reload();
-                    return response.json();
-                } else {
-                    throw new Error(`Erro de requisição: ${response.status}`);
-                }
-            })
-            .catch((warning: ExecException) => {
-                console.error("Erro:", warning);
-            });
     }
 
     return (
@@ -78,7 +66,7 @@ export default function Dashboard({
                     <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="m-6">
                             <button
-                                className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded"
+                                className="bg-blue-500 rounded-2xl hover:bg-blue-600 text-white py-2 px-4"
                                 onClick={() => handleCreateUser(true)}
                             >
                                 Criar Usuário
@@ -179,11 +167,20 @@ export default function Dashboard({
                         <div className="p-6 text-gray-900 dark:text-gray-100">
                             <ul>
                                 {users.map((user) => (
-                                    <li key={user.id}>
-                                        <strong>{user.id}</strong>
-                                        {" - "}
-                                        {user.name} {" - "}
-                                        {user.email}
+                                    <li
+                                        key={user.id}
+                                        className="border border-blue-500 py-4 rounded-2xl my-3 flex justify-between items-center"
+                                    >
+                                        <div className="ms-3">
+                                            <strong>{user.id}</strong>
+                                            {" - "}
+                                            {user.name} {" - "}
+                                            {user.email}
+                                        </div>
+                                        <div className="me-3">
+                                            <button className="bg-red-600 text-white px-3 py-2 me-2 mb-1 rounded-2xl hover:bg-red-400">Excluir</button>
+                                            <button className="bg-yellow-600 text-white px-3 py-2 ms-2 mt-1 rounded-2xl hover:bg-yellow-400">Editar</button>
+                                        </div>
                                     </li>
                                 ))}
                             </ul>
