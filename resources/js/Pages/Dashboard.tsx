@@ -10,6 +10,7 @@ import InputError from "@/Components/InputError";
 import PrimaryButton from "@/Components/PrimaryButton";
 import SecondaryButton from "@/Components/SecondaryButton";
 import { useForm } from "@inertiajs/react";
+import Swal from "sweetalert2";
 
 export default function Dashboard({
     auth,
@@ -17,8 +18,11 @@ export default function Dashboard({
 }: PageProps<{ users: Users }>) {
     const [showModal, setShowModal] = useState(false);
 
+    const [states, setStates] = useState("criando");
+
     const { data, setData, post, processing, errors, setError, reset } =
         useForm({
+            id: 0,
             nome: "",
             email: "",
             senha: "",
@@ -28,6 +32,9 @@ export default function Dashboard({
     function handleCreateUser(open: boolean) {
         setShowModal(open);
         reset();
+        if (states === "editando") {
+            setStates("criando");
+        }
     }
 
     function handleChange(e: any) {
@@ -46,8 +53,66 @@ export default function Dashboard({
     }
 
     function submit(e: any) {
-        e.preventDefault();
-        post("/users-create")
+        if (states === "criando") {
+            e.preventDefault();
+            post("/users-create");
+            Swal.fire({
+                title: "Criado!",
+                text: "Você criou o usuário.",
+                icon: "success",
+            });
+            handleCreateUser(false);
+        }
+        if (states === "editando") {
+            e.preventDefault();
+            post(`/users/edit/${data.id}`);
+
+            Swal.fire({
+                title: "Editado!",
+                text: "Você editou o usuário.",
+                icon: "success",
+            });
+
+            handleCreateUser(false);
+        }
+    }
+
+    function deleteUser(id: number) {
+        const usuario = users.find((user) => user.id === id);
+        Swal.fire({
+            title:
+                "Você tem certeza que deseja excluir o " + usuario?.name + "?",
+            text: "Está ação não pode ser revertida!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Sim, tenho certeza!",
+        }).then((result) => {
+            if (result.isConfirmed) {
+                router.delete(`/users/${usuario?.id}`);
+                Swal.fire({
+                    title: "Excluido!",
+                    text: "Você deletou o usuário.",
+                    icon: "success",
+                });
+            }
+        });
+    }
+
+    function updateUser(id: number) {
+        const usuario = users.find((user) => user.id === id);
+        // setId(usuario?.id);
+        setStates("editando");
+        handleCreateUser(true);
+
+        setData({
+            id: usuario?.id,
+            nome: usuario?.name,
+            email: usuario?.email,
+            senha: "",
+            confSenha: "",
+        });
     }
 
     return (
@@ -77,7 +142,9 @@ export default function Dashboard({
                             >
                                 <div className="p-6 text-white">
                                     <h2 className="text-lg font-bold mb-4">
-                                        Formulário de Usuário
+                                        {states === "criando"
+                                            ? "Formulário de Usuário"
+                                            : "Editar Usuário"}
                                     </h2>
                                     <form onSubmit={submit}>
                                         <div className="">
@@ -148,8 +215,9 @@ export default function Dashboard({
                                                 className="me-3"
                                                 disabled={processing}
                                             >
-                                                {" "}
-                                                Enviar{" "}
+                                                {states === "criando"
+                                                    ? "Criar"
+                                                    : "Editar"}
                                             </PrimaryButton>
                                             <SecondaryButton
                                                 onClick={() =>
@@ -178,8 +246,22 @@ export default function Dashboard({
                                             {user.email}
                                         </div>
                                         <div className="me-3">
-                                            <button className="bg-red-600 text-white px-3 py-2 me-2 mb-1 rounded-2xl hover:bg-red-400">Excluir</button>
-                                            <button className="bg-yellow-600 text-white px-3 py-2 ms-2 mt-1 rounded-2xl hover:bg-yellow-400">Editar</button>
+                                            <button
+                                                className="bg-red-600 text-white px-3 py-2 me-2 mb-1 rounded-2xl hover:bg-red-400"
+                                                onClick={() =>
+                                                    deleteUser(user.id)
+                                                }
+                                            >
+                                                Excluir
+                                            </button>
+                                            <button
+                                                className="bg-yellow-600 text-white px-3 py-2 ms-2 mt-1 rounded-2xl hover:bg-yellow-400"
+                                                onClick={() =>
+                                                    updateUser(user.id)
+                                                }
+                                            >
+                                                Editar
+                                            </button>
                                         </div>
                                     </li>
                                 ))}

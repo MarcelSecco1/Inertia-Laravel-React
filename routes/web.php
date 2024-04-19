@@ -24,6 +24,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/dashboard', [UsersController::class, 'index'])->middleware('verified')->name('dashboard');
     Route::post('/users-create', [UsersController::class, 'create'])->middleware('verified')->name('users-create');
+    Route::post('/users/edit/{id}', [UsersController::class, 'edit'])->middleware('verified')->name('users-edit');
+    Route::delete('/users/{id}', [UsersController::class, 'delete'])->middleware('verified')->name('user-delete');
 });
 
 require __DIR__ . '/auth.php';
