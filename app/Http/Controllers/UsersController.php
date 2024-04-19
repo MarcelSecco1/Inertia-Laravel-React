@@ -29,8 +29,6 @@ class UsersController extends Controller
             'email' => $request->email,
             'password' => bcrypt($request->senha),
         ]);
-
-        // return response()->json(['message' => 'Usuário criado com sucesso!'], 201, ['Content-Type' => 'application/json']);
     }
 
     public function edit(int $id, Request $request)
@@ -55,13 +53,10 @@ class UsersController extends Controller
             'name' => $request->nome,
             'email' => $request->email,
         ]);
-
-        // return response()->json(['message' => 'Usuário editado com sucesso!'], 200, ['Content-Type' => 'application/json']);
     }
     public function delete(int $id)
     {
         $user = User::findOrFail($id);
         $user->delete();
-        // return response()->json(['message' => 'Usuário deletado com sucesso!'], 200, ['Content-Type' => 'application/json']);
     }
 }
